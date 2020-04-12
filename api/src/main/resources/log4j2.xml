@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Properties>
+        <Property name="DEFAULT_PATTERN">%highlight{[%-5level]} %style{[%date{ISO8601}] [%t] [%c{1}]}{Magenta} %msg %mdc%n</Property>
+
+        <!-- DEFAULT log path if not specified as parameter: -D LOG_PATH -->
+        <Property name="application.log.path">./logs</Property>
+        <Property name="LOG_PATH">${sys:application.log.path}</Property>
+
+        <Property name="LOG_JSON">${sys:MICRO_SERVICE_HOME}/logs/stdout.json</Property>
+        <Property name="LOG_JSON_GZIP">${sys:MICRO_SERVICE_HOME}/logs/stdout-%d{yyyy-MM-dd}-%i.json.gz</Property>
+
+        <Property name="LOG_FILE">${sys:MICRO_SERVICE_HOME}/logs/application.log</Property>
+        <Property name="LOG_FILE_GZIP">${sys:MICRO_SERVICE_HOME}/logs/application-%d{yyyy-MM-dd}-%i.log.gz</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="${DEFAULT_PATTERN}"/>
+        </Console>
+
+        <RollingRandomAccessFile name="FILE" fileName="${sys:LOG_FILE}" filePattern="${sys:LOG_FILE_GZIP}">
+            <PatternLayout pattern="${DEFAULT_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="300 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="7"/>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="JSON" fileName="${sys:LOG_JSON}" filePattern="${sys:LOG_JSON_GZIP}">
+            <LogstashLayout prettyPrintEnabled="false" stackTraceEnabled="true"
+                            eventTemplateUri="classpath:CustomLayout.json"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="300 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="7"/>
+        </RollingRandomAccessFile>
+
+        <Async name="ASYNC" includeLocation="true">
+            <AppenderRef ref="FILE"/>
+            <AppenderRef ref="CONSOLE"/>
+            <AppenderRef ref="JSON"/>
+        </Async>
+    </Appenders>
+
+    <Loggers>
+        <!-- Info log level -->
+        <Root level="INFO">
+            <AppenderRef ref="ASYNC"/>
+        </Root>
+
+        <!-- Package-specific log level -->
+        <AsyncLogger name="com.company" level="INFO"/>
+        <AsyncLogger name="br.com.company" level="INFO"/>
+        <AsyncLogger name="org.springframework" level="INFO"/>
+        <AsyncLogger name="com.amazonaws" level="WARN"/>
+
+    </Loggers>
+</Configuration>

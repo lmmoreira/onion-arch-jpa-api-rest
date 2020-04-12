@@ -1,0 +1,14 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!-- Use the this file to put general functions used for other creation process -->
+    <include file="db.changelog.xml" relativeToChangelogFile="true"/>
+
+    <!-- Use the this files to create and handle tables and functions used for specific tables -->
+    <include file="db.changelog-table-driver.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-table-anonymization.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-table-shedlock.xml" relativeToChangelogFile="true"/>
+</databaseChangeLog>

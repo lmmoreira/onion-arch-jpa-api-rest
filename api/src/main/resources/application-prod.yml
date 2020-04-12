@@ -1,0 +1,77 @@
+spring:
+  write:
+    datasource:
+      hikari:
+        jdbc-url: jdbc:postgresql://us-east-1-pg-project-driver-account-rw1.aws-prod-legacy.dc-company.com:5432/company-project-driver-account
+        username: company-project-driver-account-app
+        password: ${DB_PASS}
+        pool-name: project-driver-account-api
+        minimum-idle: 1
+        maximum-pool-size: 20
+        connection-timeout: 2000
+        leak-detection-threshold: 6000
+        schema: company_project_driver_account
+  read:
+    datasource:
+      hikari:
+        jdbc-url: jdbc:postgresql://us-east-1-pg-project-driver-account-ro1.aws-prod-legacy.dc-company.com:5432/company-project-driver-account
+        username: company-project-driver-account-app
+        password: ${DB_PASS}
+        pool-name: project-driver-account-api-ro
+        minimum-idle: 1
+        maximum-pool-size: 20
+        connection-timeout: 2000
+        leak-detection-threshold: 6000
+        schema: company_project_driver_account
+        read-only: true
+
+  liquibase:
+    enabled: false
+    
+amazon:
+  region: "us-east-1"
+  account: "378497029709"
+  useIAMRoles: "true"
+  sqs:
+  s3:
+    logistics-data:
+      bucketName: nv-logistics-data.company.com.br
+
+#Redis
+cache:
+  redis:
+    url: redis://us-east-1-elasticache-nv-logistics-project.aws-prod-legacy.dc-company.com:6379
+    read-timeout: 5
+    reconnection-delay: 7
+  manager:
+    lock-time: 30
+
+management:
+  server:
+    port: 8081
+
+anonymization:
+  enabled: true
+  interval:
+    cron: 0 * * * * *
+    lock:
+      least: PT30s
+      most: PT50s
+  ttl:
+    days: 0
+
+identity:
+  endpoint: http://us-east-1-elb-logistics-identity-api.aws-prod-legacy.dc-company.com
+  connectTimeout: 500
+  socketTimeout: 500
+
+handler:
+  driver-create-or-update:
+    workers: 5
+    buffer: 5
+    maximumMessagesToRead: 5
+    queue: nv-PROD_company_IDP_CORE_TO_DRIVER_ACCOUNT_CREATE_OR_UPDATE
+    poolingDelay: 100
+    threadPollExecutorSize: 1
+    waitTime: 5
+    visibleTimeout: 600

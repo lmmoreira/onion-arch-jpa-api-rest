@@ -1,0 +1,38 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+
+    <property name="uuid_function" value="RANDOM_UUID()" dbms="h2"/>
+    <property name="uuid_function" value="uuid_generate_v4()" dbms="postgresql"/>
+
+    <property name="uuid_type" value="uuid" dbms="postgresql"/>
+    <property name="uuid_type" value="uuid" dbms="h2"/>
+
+    <changeSet id="create-role" author="gabriel.galhardi" dbms="postgresql" context="local">
+        <sql dbms="postgresql" endDelimiter=";">
+            CREATE ROLE "company-project-driver-account";
+            GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA "public" TO "company-project-driver-account";
+        </sql>
+    </changeSet>
+
+    <changeSet id="create-uuid-extension" author="gabriel.galhardi" dbms="postgresql">
+        <sql dbms="postgresql" endDelimiter=";">
+            CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+        </sql>
+    </changeSet>
+
+    <changeSet id="create-jsonb" author="gabriel.galhardi" dbms="h2">
+        <sql>CREATE domain IF NOT EXISTS jsonb AS other;</sql>
+    </changeSet>
+
+    <changeSet id="test-connection" author="gabriel.galhardi" runAlways="true">
+        <sql>Select 1=1;</sql>
+    </changeSet>
+
+    <changeSet id="set-role" author="gabriel.galhardi" runAlways="true" dbms="postgresql">
+        <sql>set role 'company-project-driver-account';</sql>
+    </changeSet>
+
+</databaseChangeLog>

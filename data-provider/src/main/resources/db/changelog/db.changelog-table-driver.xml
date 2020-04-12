@@ -1,0 +1,162 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="TL-10142" author="leonardo.moreira">
+        <createTable tableName="DRIVER">
+            <column name="UUID" type="${uuid_type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="project_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TENANT" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_AT" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="UPDATED_AT" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint columnNames="project_ID, TENANT" constraintName="UNIQUE_DRIVER" tableName="DRIVER"/>
+
+        <createTable tableName="DRIVER_ATTRIBUTE">
+            <column name="UUID" type="${uuid_type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DRIVER_UUID" type="${uuid_type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ATTRIBUTE" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VALUE" type="varchar(255)"/>
+            <column name="CREATED_AT" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="UPDATED_AT" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint columnNames="DRIVER_UUID, ATTRIBUTE" constraintName="UNIQUE_DRIVER_ATTRIBUTE"
+                             tableName="DRIVER_ATTRIBUTE"/>
+        <addForeignKeyConstraint baseColumnNames="DRIVER_UUID"
+                                 baseTableName="DRIVER_ATTRIBUTE"
+                                 constraintName="fk_driver_attribute_driver_uuid"
+                                 deferrable="false"
+                                 referencedColumnNames="UUID"
+                                 referencedTableName="DRIVER"/>
+    </changeSet>
+
+    <changeSet id="TL-10146-add-external-update-at" author="lucas.abreu">
+        <addColumn tableName="DRIVER">
+            <column name="EXTERNAL_UPDATED_AT" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="resize-driver-attribute-value-column" author="gabriel.galhardi">
+        <modifyDataType tableName="DRIVER_ATTRIBUTE" columnName="VALUE" newDataType="varchar(1024)"/>
+    </changeSet>
+
+    <changeSet id="set-driver-attribute-value-column-not-null" author="gabriel.galhardi">
+        <addNotNullConstraint
+                columnName="value"
+                constraintName="value_notnull"
+                tableName="DRIVER_ATTRIBUTE"/>
+    </changeSet>
+
+    <changeSet id="create-driver-tenant-idx" author="gabriel.galhardi">
+        <createIndex indexName="idx_tenant"
+                     tableName="DRIVER" unique="false">
+            <column name="TENANT"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="alter-timestamp-to-with-timezone" author="gabriel.galhardi" runInTransaction="false" dbms="postgresql">
+        <sql>
+            ALTER TABLE driver ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'UTC';
+            ALTER TABLE driver ALTER COLUMN updated_at TYPE TIMESTAMP WITH TIME ZONE USING updated_at AT TIME ZONE 'UTC';
+            ALTER TABLE driver ALTER COLUMN external_updated_at TYPE TIMESTAMP WITH TIME ZONE USING external_updated_at AT TIME ZONE 'UTC';
+            ALTER TABLE driver_attribute ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE USING created_at AT TIME ZONE 'UTC';
+            ALTER TABLE driver_attribute ALTER COLUMN updated_at TYPE TIMESTAMP WITH TIME ZONE USING updated_at AT TIME ZONE 'UTC';
+        </sql>
+    </changeSet>
+
+    <changeSet id="TL-12630" author="leonardo.moreira">
+        <addColumn tableName="DRIVER">
+            <column name="ANONYMIZED_AT" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="TL-12630-add-user-uuid" author="leonardo.moreira">
+        <addColumn tableName="DRIVER">
+            <column name="USER_UUID" type="${uuid_type}">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="lucas.abreu" id="TL-12630-6">
+        <modifyDataType columnName="ANONYMIZED_AT"
+                        newDataType="TIMESTAMPTZ"
+                        tableName="DRIVER"/>
+    </changeSet>
+
+    <changeSet id="add-columns-external-id-and-des" author="jesse.rocha">
+        <addColumn tableName="DRIVER">
+            <column name="EXTERNAL_ID" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="DELIVERY_EXTERNAL_SYSTEM" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="enable-null-project-id" author="jesse.rocha">
+        <dropNotNullConstraint tableName="DRIVER" columnName="project_ID"/>
+    </changeSet>
+
+    <changeSet id="increase-size-attribute-value" author="jesse.rocha" >
+        <modifyDataType
+                columnName="VALUE"
+                newDataType="varchar(2048)"
+                tableName="DRIVER_ATTRIBUTE"/>
+    </changeSet>
+
+    <changeSet id="create-driver-delivery-external-system-idx" author="jesse.rocha">
+        <createIndex indexName="idx_delivery_external_system"
+                     tableName="DRIVER" unique="false">
+            <column name="DELIVERY_EXTERNAL_SYSTEM"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="TL-13695-add-constraint-not-null-delivery-external-system" author="jesse.rocha">
+        <addNotNullConstraint tableName="DRIVER" columnName="DELIVERY_EXTERNAL_SYSTEM"/>
+    </changeSet>
+    
+     <changeSet id="create-index-to-driver-attribute" author="gabriel.galhardi" runInTransaction="false" >
+          <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="idx_driver_attributes"/>
+            </not>
+        </preConditions>
+        <sql dbms="postgresql">
+            create index concurrently idx_driver_attributes on driver_attribute  (attribute, lower(value)) where attribute in ('PHONE','FULL_NAME');
+        </sql>
+     </changeSet>
+</databaseChangeLog>

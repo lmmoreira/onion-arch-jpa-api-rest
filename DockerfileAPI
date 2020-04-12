@@ -1,0 +1,21 @@
+FROM companyhub/new-relic-agent:5.9 as builder
+FROM openjdk:11-jre-slim-sid
+
+LABEL maintainer="Logistics"
+LABEL version="1.0"
+
+WORKDIR /usr/src/app
+COPY api/target/*.jar project-driver-account-api.jar
+RUN mkdir /newrelic
+COPY --from=builder /nr/* /newrelic/
+
+EXPOSE 8080
+EXPOSE 8081
+
+ENV NR_APP_NAME "project-driver-account-api"
+ENV SPRING_PROFILES_ACTIVE "dev"
+ENV JAVA_OPTS "-Xms128m -Xmx1024m"
+
+ADD entrypoint.sh /
+
+ENTRYPOINT ["/entrypoint.sh"]

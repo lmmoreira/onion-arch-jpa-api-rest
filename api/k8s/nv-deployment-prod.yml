@@ -1,0 +1,62 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: project-driver-account-api
+  namespace: project-driver-account-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: project-driver-account-api
+  template:
+    metadata:
+      labels:
+        app: project-driver-account-api
+      annotations:
+        vault.hashicorp.com/agent-pre-populate-only: "true"
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "k8s_nv-logistics_prod-legacy_production_own_namespace"
+        vault.hashicorp.com/agent-inject-secret-app: "production/k8s_nv-logistics_prod-legacy_production/logistics/platform/project-driver-account-api/app"
+        vault.hashicorp.com/agent-inject-template-app: |
+          {{- with secret "production/k8s_nv-logistics_prod-legacy_production/logistics/platform/project-driver-account-api/app" -}}
+              {{ range $k, $v := .Data.data }}
+                  export {{ $k }}='{{ $v }}'
+              {{- end }}
+          {{- end }}
+        vault.hashicorp.com/agent-inject-secret-db: "production/k8s_nv-logistics_prod-legacy_production/logistics/platform/project-driver-account-api/db"
+        vault.hashicorp.com/agent-inject-template-db: |
+          {{- with secret "production/k8s_nv-logistics_prod-legacy_production/logistics/platform/project-driver-account-api/db" -}}
+              {{ range $k, $v := .Data.data }}
+                  export {{ $k }}='{{ $v }}'
+              {{- end }}
+          {{- end }}
+    spec:
+      containers:
+        - name: project-driver-account-api
+          image: ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/project-driver-account-api:${VERSION}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+            - containerPort: 8081
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "1536Mi"
+              cpu: 1000m
+            limits:
+              memory: "2048Mi"
+              cpu: 1000m
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod

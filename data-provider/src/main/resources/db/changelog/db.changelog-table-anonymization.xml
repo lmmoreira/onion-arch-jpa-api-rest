@@ -1,0 +1,68 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="TL-12630" author="leonardo.moreira">
+        <createTable tableName="DRIVER_ANONYMIZATION">
+            <column name="UUID" type="${uuid_type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="DRIVER_UUID" type="${uuid_type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="USER" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_AT" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint columnNames="DRIVER_UUID" constraintName="UNIQUE_DRIVER_ANONYMIZATION" tableName="DRIVER_ANONYMIZATION"/>
+
+        <addForeignKeyConstraint baseColumnNames="DRIVER_UUID"
+                                 baseTableName="DRIVER_ANONYMIZATION"
+                                 constraintName="fk_anonymization_driver_uuid"
+                                 deferrable="false"
+                                 referencedColumnNames="UUID"
+                                 referencedTableName="DRIVER"/>
+    </changeSet>
+
+
+    <changeSet author="leonardo.moreira" id="TL-12630-1">
+        <renameColumn newColumnName="USER_NAME"
+                      oldColumnName="USER"
+                      tableName="DRIVER_ANONYMIZATION"/>
+    </changeSet>
+
+    <changeSet author="leonardo.moreira" id="TL-12630-2">
+        <addColumn tableName="DRIVER_ANONYMIZATION">
+                <column name="ANONYMIZED_AT" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="leonardo.moreira" id="TL-12630-3">
+        <renameColumn newColumnName="USER_UUID"
+                      oldColumnName="USER_NAME"
+                      tableName="DRIVER_ANONYMIZATION"/>
+    </changeSet>
+
+    <changeSet author="lucas.abreu" id="TL-12630-4">
+        <modifyDataType columnName="CREATED_AT"
+                        newDataType="TIMESTAMPTZ"
+                        tableName="DRIVER_ANONYMIZATION"/>
+    </changeSet>
+
+    <changeSet author="lucas.abreu" id="TL-12630-5">
+        <modifyDataType columnName="ANONYMIZED_AT"
+                        newDataType="TIMESTAMPTZ"
+                        tableName="DRIVER_ANONYMIZATION"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,77 @@
+spring:
+  write:
+    datasource:
+      hikari:
+        jdbc-url: jdbc:postgresql://dev-pg-logistics1.dc.company.com.br:5432/company-project-driver-account
+        username: company-project-driver-account-app
+        password: ${DB_PASS}
+        pool-name: project-driver-account-api
+        minimum-idle: 1
+        maximum-pool-size: 20
+        connection-timeout: 2000
+        leak-detection-threshold: 6000
+        schema: company_project_driver_account
+  read:
+    datasource:
+      hikari:
+        jdbc-url: jdbc:postgresql://sa-east-1-pg-logistics-ro1.aws-development.dc-company.com:5432/company-project-driver-account
+        username: company-project-driver-account-app
+        password: ${DB_PASS}
+        pool-name: project-driver-account-api-ro
+        minimum-idle: 1
+        maximum-pool-size: 20
+        connection-timeout: 2000
+        leak-detection-threshold: 6000
+        schema: company_project_driver_account
+        read-only: true
+
+  liquibase:
+    enabled: false
+    
+amazon:
+  region: "sa-east-1"
+  account: "739171219021"
+  useIAMRoles: "true"
+  sqs:
+  s3:
+    logistics-data:
+      bucketName: logistics-data.company-devel.com.br
+
+#Redis
+cache:
+  redis:
+    url: redis://sa-east-1-elasticache-dev-redis.aws-development.dc-company.com:6379
+    read-timeout: 5
+    reconnection-delay: 7
+  manager:
+    lock-time: 30
+
+management:
+  server:
+    port: 8081
+
+anonymization:
+  enabled: true
+  interval:
+    cron: 0 * * * * *
+    lock:
+      least: PT30s
+      most: PT50s
+  ttl:
+    days: 0
+
+identity:
+  endpoint: http://internal-dev-logistics-identity-api-509328305.sa-east-1.elb.amazonaws.com
+  connectTimeout: 500
+  socketTimeout: 500
+
+handler:
+  driver-create-or-update:
+    workers: 2
+    buffer: 2
+    maximumMessagesToRead: 5
+    queue: DEV_company_IDP_CORE_TO_DRIVER_ACCOUNT_CREATE_OR_UPDATE
+    poolingDelay: 100
+    threadPollExecutorSize: 1
+    waitTime: 5
+    visibleTimeout: 600
